@@ -56,6 +56,8 @@ export interface ThemeConfig {
 
 export type GameMode = 'classic' | 'timed' | 'zen' | 'daily';
 
+export type PuzzleType = 'sliding' | 'wordsearch' | 'memory' | 'flood' | 'lights';
+
 export type GameStatus = 'TITLE_MENU' | 'PLAYING' | 'PAUSED' | 'VICTORY';
 
 export type HintTier = 1 | 2 | 3 | 4;

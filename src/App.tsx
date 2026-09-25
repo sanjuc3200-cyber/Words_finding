@@ -16,12 +16,18 @@ import {
   AccessibilitySettings,
   CategoryWord,
   GridPosition,
+  PuzzleType,
 } from './types/game';
 import { CATEGORIES } from './data/categories';
 import { THEMES } from './utils/theme';
 import { generatePuzzle, getDateSeed } from './utils/puzzleGenerator';
 import { getSoundEnabled, setSoundEnabled } from './utils/sound';
 import { Header } from './components/Header';
+import { PuzzleSelector } from './components/PuzzleSelector';
+import { SlidingPuzzle } from './components/SlidingPuzzle';
+import { MemoryMatch } from './components/MemoryMatch';
+import { ColorFlood } from './components/ColorFlood';
+import { LightsOut } from './components/LightsOut';
 import { GameHud } from './components/GameHud';
 import { WordGrid } from './components/WordGrid';
 import { WordList } from './components/WordList';
@@ -32,10 +38,13 @@ import { CustomPuzzleModal } from './components/CustomPuzzleModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { SettingsModal } from './components/SettingsModal';
 import { StatsModal } from './components/StatsModal';
+import { InstallAppModal } from './components/InstallAppModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 const STATS_KEY = 'lexicon_quest_stats';
 const SETTINGS_KEY = 'lexicon_quest_settings';
 const THEME_KEY = 'lexicon_quest_theme';
+const ACTIVE_PUZZLE_KEY = 'lexicon_active_puzzle';
 
 const DEFAULT_STATS: PlayerStats = {
   gamesPlayed: 0,
@@ -54,6 +63,28 @@ const DEFAULT_SETTINGS: AccessibilitySettings = {
 };
 
 export default function App() {
+  // Active Puzzle Type (Sliding, Word Search, Memory Match, Color Flood, Lights Out)
+  const [activePuzzle, setActivePuzzle] = useState<PuzzleType>(() => {
+    try {
+      const saved = localStorage.getItem(ACTIVE_PUZZLE_KEY);
+      if (saved && ['sliding', 'wordsearch', 'memory', 'flood', 'lights'].includes(saved)) {
+        return saved as PuzzleType;
+      }
+    } catch {
+      // ignore
+    }
+    return 'sliding';
+  });
+
+  const handleSelectPuzzle = (p: PuzzleType) => {
+    setActivePuzzle(p);
+    try {
+      localStorage.setItem(ACTIVE_PUZZLE_KEY, p);
+    } catch {
+      // ignore
+    }
+  };
+
   // Theme state
   const [themeId, setThemeId] = useState<ThemeId>(() => {
     try {
@@ -89,12 +120,12 @@ export default function App() {
     return DEFAULT_STATS;
   });
 
-  // Game configuration
+  // Word Search Game configuration
   const [selectedCategory, setSelectedCategory] = useState<Category>(CATEGORIES[0]);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [gameMode, setGameMode] = useState<GameMode>('classic');
 
-  // Board state
+  // Word Search Board state
   const [grid, setGrid] = useState<string[][]>([]);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
   const [activeHint, setActiveHint] = useState<ActiveHint | null>(null);
@@ -110,6 +141,7 @@ export default function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Sound ref sync
   useEffect(() => {
@@ -161,7 +193,17 @@ export default function App() {
     }
   };
 
-  // Generate / start a new puzzle
+  // Generic win tracker for sliding / memory / lights / flood
+  const handleGenericWin = () => {
+    saveStats((prev) => ({
+      ...prev,
+      gamesWon: prev.gamesWon + 1,
+      gamesPlayed: prev.gamesPlayed + 1,
+      currentStreak: prev.currentStreak + 1,
+    }));
+  };
+
+  // Generate / start a new word search puzzle
   const startNewGame = useCallback(
     (
       cat: Category = selectedCategory,
@@ -180,7 +222,6 @@ export default function App() {
       setHintsUsedThisGame(0);
       setIsVictoryModalOpen(false);
 
-      // Increment games played
       saveStats((prev) => ({
         ...prev,
         gamesPlayed: prev.gamesPlayed + 1,
@@ -189,7 +230,7 @@ export default function App() {
     [selectedCategory, difficulty, gameMode]
   );
 
-  // Initialize first game on mount
+  // Initialize word search board on mount
   const hasInitialized = useRef(false);
   useEffect(() => {
     if (!hasInitialized.current) {
@@ -198,10 +239,10 @@ export default function App() {
     }
   }, [startNewGame]);
 
-  // Stopwatch timer interval
+  // Stopwatch timer interval for word search
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isTimerActive && gameMode !== 'zen') {
+    if (isTimerActive && gameMode !== 'zen' && activePuzzle === 'wordsearch') {
       interval = setInterval(() => {
         setTimerSeconds((prev) => prev + 1);
       }, 1000);
@@ -209,7 +250,7 @@ export default function App() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerActive, gameMode]);
+  }, [isTimerActive, gameMode, activePuzzle]);
 
   // Handle word discovered by player
   const handleWordDiscovered = (foundWord: PlacedWord) => {
@@ -218,12 +259,10 @@ export default function App() {
         w.id === foundWord.id ? { ...w, found: true, foundAt: Date.now() } : w
       );
 
-      // If active hint was for this word, clear it
       if (activeHint?.targetWord.id === foundWord.id) {
         setActiveHint(null);
       }
 
-      // Check for victory
       const allFound = updated.every((w) => w.found);
       if (allFound) {
         setIsTimerActive(false);
@@ -288,7 +327,6 @@ export default function App() {
     handleWordDiscovered(word);
   };
 
-  // Quick random hint button on HUD
   const handleTriggerRandomHint = () => {
     const unfound = placedWords.filter((w) => !w.found);
     if (unfound.length > 0) {
@@ -297,29 +335,25 @@ export default function App() {
     }
   };
 
-  // Category switch
   const handleCategoryChange = (cat: Category) => {
     setSelectedCategory(cat);
     startNewGame(cat, difficulty, gameMode);
   };
 
-  // Difficulty switch
   const handleDifficultyChange = (diff: Difficulty) => {
     setDifficulty(diff);
     startNewGame(selectedCategory, diff, gameMode);
   };
 
-  // Mode switch
   const handleModeChange = (mode: GameMode) => {
     setGameMode(mode);
     startNewGame(selectedCategory, difficulty, mode);
   };
 
-  // Select Daily Mode
   const handleSelectDailyMode = () => {
+    setActivePuzzle('wordsearch');
     setGameMode('daily');
     const date = new Date();
-    // Daily category picked deterministically by day
     const catIndex = (date.getDate() + date.getMonth()) % CATEGORIES.length;
     const dailyCat = CATEGORIES[catIndex];
     setSelectedCategory(dailyCat);
@@ -328,13 +362,13 @@ export default function App() {
   };
 
   const handleSelectClassicMode = () => {
+    setActivePuzzle('wordsearch');
     if (gameMode === 'daily') {
       setGameMode('classic');
       startNewGame(CATEGORIES[0], 'medium', 'classic');
     }
   };
 
-  // Custom puzzle generation
   const handleCreateCustomPuzzle = (
     name: string,
     words: CategoryWord[],
@@ -350,10 +384,10 @@ export default function App() {
     setSelectedCategory(customCat);
     setDifficulty(diff);
     setGameMode('classic');
+    setActivePuzzle('wordsearch');
     startNewGame(customCat, diff, 'classic');
   };
 
-  // Next category after victory
   const handleNextCategory = () => {
     const currentIndex = CATEGORIES.findIndex((c) => c.id === selectedCategory.id);
     const nextIndex = (currentIndex + 1) % CATEGORIES.length;
@@ -376,83 +410,120 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenHowToPlay={() => setIsHowToPlayOpen(true)}
         onOpenCustomCreator={() => setIsCustomModalOpen(true)}
+        onOpenInstallModal={() => setIsInstallModalOpen(true)}
         onSelectDailyMode={handleSelectDailyMode}
         onSelectClassicMode={handleSelectClassicMode}
       />
 
-      {/* Main Playing Arena */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 sm:py-6 flex flex-col items-center">
-        {/* HUD Bar (Theme/Category, Difficulty, Mode, Timer, Quick Hint) */}
-        <GameHud
-          theme={theme}
-          selectedCategory={selectedCategory}
-          difficulty={difficulty}
-          gameMode={gameMode}
-          timerSeconds={timerSeconds}
-          unfoundCount={unfoundCount}
-          onSelectCategory={handleCategoryChange}
-          onChangeDifficulty={handleDifficultyChange}
-          onChangeMode={handleModeChange}
-          onNewPuzzle={() => startNewGame()}
-          onTriggerRandomHint={handleTriggerRandomHint}
-        />
+      {/* Simple Puzzle Type Switcher Bar */}
+      <PuzzleSelector
+        theme={theme}
+        activePuzzle={activePuzzle}
+        onSelectPuzzle={handleSelectPuzzle}
+      />
 
-        {/* Daily Banner if daily mode */}
-        {gameMode === 'daily' && (
-          <div className="w-full max-w-5xl mb-4 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-indigo-400">📅 Daily Word Challenge</span>
-              <span className="text-slate-400">·</span>
-              <span className="text-slate-300">
-                {new Date().toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </span>
-            </div>
-            <span className="text-slate-400 text-[11px]">
-              Same seed for word hunters worldwide
-            </span>
-          </div>
+      {/* Main Playing Arena */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-3 sm:py-5 flex flex-col items-center">
+        {/* GAME 1: Sliding Tile Puzzle */}
+        {activePuzzle === 'sliding' && (
+          <SlidingPuzzle theme={theme} onWin={handleGenericWin} />
         )}
 
-        {/* Game Arena Layout: Left Grid, Right Word Bank */}
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          {/* Puzzle Grid Frame (Takes 7-8 columns on desktop) */}
-          <div className="md:col-span-7 lg:col-span-8 flex flex-col items-center justify-center">
-            {grid.length > 0 && (
-              <WordGrid
-                grid={grid}
-                placedWords={placedWords}
-                theme={theme}
-                largeText={settings.largeText}
-                highContrast={settings.highContrast}
-                clickToSelectMode={settings.clickToSelectMode}
-                activeHint={activeHint}
-                onWordDiscovered={handleWordDiscovered}
-              />
-            )}
-          </div>
+        {/* GAME 2: Memory Match Cards */}
+        {activePuzzle === 'memory' && (
+          <MemoryMatch theme={theme} onWin={handleGenericWin} />
+        )}
 
-          {/* Word Bank & Clues (Takes 5-4 columns on desktop) */}
-          <div className="md:col-span-5 lg:col-span-4 w-full">
-            <WordList
-              placedWords={placedWords}
+        {/* GAME 3: Color Flood Strategy */}
+        {activePuzzle === 'flood' && (
+          <ColorFlood theme={theme} onWin={handleGenericWin} />
+        )}
+
+        {/* GAME 4: Lights Out Logic */}
+        {activePuzzle === 'lights' && (
+          <LightsOut theme={theme} onWin={handleGenericWin} />
+        )}
+
+        {/* GAME 5: Word Search & Finder */}
+        {activePuzzle === 'wordsearch' && (
+          <>
+            {/* HUD Bar (Theme/Category, Difficulty, Mode, Timer, Quick Hint) */}
+            <GameHud
               theme={theme}
-              largeText={settings.largeText}
-              onWordClick={(word) => setHintModalWord(word)}
-              onTriviaClick={(word) => setTriviaModalWord(word)}
+              selectedCategory={selectedCategory}
+              difficulty={difficulty}
+              gameMode={gameMode}
+              timerSeconds={timerSeconds}
+              unfoundCount={unfoundCount}
+              onSelectCategory={handleCategoryChange}
+              onChangeDifficulty={handleDifficultyChange}
+              onChangeMode={handleModeChange}
+              onNewPuzzle={() => startNewGame()}
+              onTriggerRandomHint={handleTriggerRandomHint}
             />
-          </div>
-        </div>
+
+            {/* Daily Banner if daily mode */}
+            {gameMode === 'daily' && (
+              <div className="w-full max-w-5xl mb-4 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-indigo-400">📅 Daily Word Challenge</span>
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-300">
+                    {new Date().toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+                <span className="text-slate-400 text-[11px]">
+                  Same seed for word hunters worldwide
+                </span>
+              </div>
+            )}
+
+            {/* Arena Layout: Left Grid, Right Word Bank */}
+            <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="md:col-span-7 lg:col-span-8 flex flex-col items-center justify-center">
+                {grid.length > 0 && (
+                  <WordGrid
+                    grid={grid}
+                    placedWords={placedWords}
+                    theme={theme}
+                    largeText={settings.largeText}
+                    highContrast={settings.highContrast}
+                    clickToSelectMode={settings.clickToSelectMode}
+                    activeHint={activeHint}
+                    onWordDiscovered={handleWordDiscovered}
+                  />
+                )}
+              </div>
+
+              <div className="md:col-span-5 lg:col-span-4 w-full">
+                <WordList
+                  placedWords={placedWords}
+                  theme={theme}
+                  largeText={settings.largeText}
+                  onWordClick={(word) => setHintModalWord(word)}
+                  onTriviaClick={(word) => setTriviaModalWord(word)}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       {/* Subtle, unadorned footer */}
       <footer className="w-full border-t border-inherit py-3 px-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Lexicon Quest · Tactile Word Finder</span>
+          <span>Lexicon Quest &amp; Simple Puzzles Collection</span>
           <div className="flex items-center gap-4 text-[11px] text-slate-400">
+            <button
+              onClick={() => setIsInstallModalOpen(true)}
+              className="text-indigo-400 hover:underline transition-all"
+            >
+              Install App / APK
+            </button>
             <button
               onClick={() => setIsHowToPlayOpen(true)}
               className="hover:underline transition-all"
@@ -475,7 +546,16 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Offline Connectivity Banner */}
+      <OfflineIndicator />
+
       {/* Modals */}
+      <InstallAppModal
+        isOpen={isInstallModalOpen}
+        theme={theme}
+        onClose={() => setIsInstallModalOpen(false)}
+      />
+
       <HintModal
         word={hintModalWord}
         isOpen={Boolean(hintModalWord)}

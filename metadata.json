@@ -2,5 +2,7 @@
   "name": "Lexicon Quest - Word Search & Finder",
   "description": "An immersive, beautifully crafted word search and finding puzzle game featuring rich themes, multi-tier hints, customizable grids, and daily challenges.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

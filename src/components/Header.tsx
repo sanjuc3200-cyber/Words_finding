@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameMode, ThemeConfig } from '../types/game';
-import { Volume2, VolumeX, BarChart3, Settings, HelpCircle, PlusCircle, Calendar } from 'lucide-react';
+import { Volume2, VolumeX, BarChart3, Settings, HelpCircle, PlusCircle, Calendar, Smartphone } from 'lucide-react';
 
 interface HeaderProps {
   theme: ThemeConfig;
@@ -11,6 +11,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenHowToPlay: () => void;
   onOpenCustomCreator: () => void;
+  onOpenInstallModal: () => void;
   onSelectDailyMode: () => void;
   onSelectClassicMode: () => void;
 }
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenHowToPlay,
   onOpenCustomCreator,
+  onOpenInstallModal,
   onSelectDailyMode,
   onSelectClassicMode,
 }) => {
@@ -78,6 +80,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             type="button"
+            onClick={onOpenInstallModal}
+            className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Install / APK</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onOpenHowToPlay}
             className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-400 transition-colors"
           >
@@ -88,6 +99,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Zone 3: Primary actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Mobile Install Button */}
+          <button
+            type="button"
+            onClick={onOpenInstallModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30 text-xs font-medium transition-all"
+            title="Install app on mobile or get APK"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Install App</span>
+          </button>
+
           {/* Audio Mute Button */}
           <button
             type="button"

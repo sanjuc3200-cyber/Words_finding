@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeConfig } from '../types/game';
-import { X, MousePointer, Sparkles, Lightbulb, Calendar, CheckCircle } from 'lucide-react';
+import { X, Grid, Search, Layers, Droplet, Lightbulb } from 'lucide-react';
 
 interface HowToPlayModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
       <div
         className={`w-full max-w-lg rounded-2xl border ${theme.cardClass} p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto`}
       >
@@ -28,74 +28,83 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-xl font-bold mb-1">How to Play Lexicon Quest</h3>
+        <h3 className="text-xl font-bold mb-1">Simple Puzzles Guide</h3>
         <p className="text-xs text-slate-400 mb-5">
-          Master the art of word finding across classic, senior-accessible grids
+          Quick rules and tips for every casual puzzle game in the collection
         </p>
 
         <div className="space-y-4 text-xs leading-relaxed">
-          {/* Rule 1 */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
-              <MousePointer className="w-4 h-4" />
+          {/* 1. Sliding Tiles */}
+          <div className="flex gap-3 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <Grid className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
-                1. Select Words with Touch or Mouse
+                1. Sliding Tiles (15-Puzzle &amp; 8-Puzzle)
               </h4>
               <p className="text-slate-400">
-                Press and drag across letters to form a word in any valid direction: horizontal, vertical, or diagonal (forwards and backwards depending on difficulty). You can also switch to <strong>Click-to-Click mode</strong> in Settings if you prefer not dragging.
+                Tap or click any tile adjacent to the empty slot (or use keyboard arrow keys) to slide it. Arrange all tiles in numerical order (1, 2, 3...) from left to right, top to bottom!
               </p>
             </div>
           </div>
 
-          {/* Rule 2 */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-              <CheckCircle className="w-4 h-4" />
+          {/* 2. Word Search */}
+          <div className="flex gap-3 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Search className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
-                2. Uncover the Entire Word Bank
+                2. Word Search &amp; Finding
               </h4>
               <p className="text-slate-400">
-                Each word you find receives a vibrant distinct marker. Found words can also share intersecting letters. Tap any discovered word in the bank to view fascinating real-world trivia!
+                Drag or tap across letters horizontally, vertically, or diagonally to discover hidden theme words. Tap any unfound word for 4-tier hints, or tap found words for real-world trivia!
               </p>
             </div>
           </div>
 
-          {/* Rule 3 */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+          {/* 3. Memory Match */}
+          <div className="flex gap-3 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
+                3. Memory Match Pairs
+              </h4>
+              <p className="text-slate-400">
+                Tap any two cards to flip them. If their symbols match, they stay solved. If they differ, remember their locations as they flip back. Find all pairs in the fewest moves!
+              </p>
+            </div>
+          </div>
+
+          {/* 4. Color Flood */}
+          <div className="flex gap-3 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+            <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+              <Droplet className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
+                4. Color Flood Strategy
+              </h4>
+              <p className="text-slate-400">
+                Starting from the top-left tile, tap color buttons below the board to flood adjacent matching tiles with that color. Flood the entire grid in one color in 22 moves or fewer!
+              </p>
+            </div>
+          </div>
+
+          {/* 5. Lights Out */}
+          <div className="flex gap-3 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center shrink-0">
               <Lightbulb className="w-4 h-4" />
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
-                3. Four-Tier Senior &amp; Accessibility Hints
+                5. Lights Out Logic
               </h4>
               <p className="text-slate-400">
-                Need guidance? Tap any unfound word in the list to choose your assistance tier:
-              </p>
-              <ul className="mt-1 space-y-1 list-disc list-inside text-slate-400 pl-1">
-                <li><strong className="text-slate-300">Tier 1:</strong> Orientation Clue (Direction angle)</li>
-                <li><strong className="text-slate-300">Tier 2:</strong> First Letter Beacon (Pulses start coordinate)</li>
-                <li><strong className="text-slate-300">Tier 3:</strong> Sector Locator (Highlights target line)</li>
-                <li><strong className="text-slate-300">Tier 4:</strong> Word Reveal (Direct solve)</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Rule 4 */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-0.5 text-slate-200">
-                4. Daily Puzzles &amp; Custom Architect
-              </h4>
-              <p className="text-slate-400">
-                A fresh curated Daily Puzzle updates every 24 hours with an identical seed for everyone worldwide. Or unleash your creativity using the Custom Maker to generate word searches from any word list.
+                Tapping a light toggles itself and its four orthogonal neighbors (Up, Down, Left, Right). Your objective is to turn every single light OFF!
               </p>
             </div>
           </div>

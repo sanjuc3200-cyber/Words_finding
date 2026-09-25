@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0B0F19"/>
+  <rect x="40" y="40" width="432" height="432" rx="88" fill="#131B2E" stroke="#312E81" stroke-width="6"/>
+  <!-- Crossword / Word Search Grid Lines -->
+  <line x1="160" y1="80" x2="160" y2="432" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <line x1="256" y1="80" x2="256" y2="432" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <line x1="352" y1="80" x2="352" y2="432" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <line x1="80" y1="160" x2="432" y2="160" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <line x1="80" y1="256" x2="432" y2="256" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <line x1="80" y1="352" x2="432" y2="352" stroke="#253252" stroke-width="4" stroke-dasharray="8 8"/>
+  <!-- Glowing Word Marker Highlight Pill -->
+  <rect x="100" y="226" width="220" height="60" rx="30" fill="#4F46E5" fill-opacity="0.5" stroke="#818CF8" stroke-width="4"/>
+  <!-- Letters: W O R D -->
+  <text x="130" y="268" font-family="sans-serif" font-weight="900" font-size="38" fill="#FFFFFF" text-anchor="middle">W</text>
+  <text x="180" y="268" font-family="sans-serif" font-weight="900" font-size="38" fill="#FFFFFF" text-anchor="middle">O</text>
+  <text x="235" y="268" font-family="sans-serif" font-weight="900" font-size="38" fill="#FFFFFF" text-anchor="middle">R</text>
+  <text x="288" y="268" font-family="sans-serif" font-weight="900" font-size="38" fill="#FFFFFF" text-anchor="middle">D</text>
+  <!-- Stylized Magnifying Finder Lens -->
+  <circle cx="330" cy="220" r="76" fill="none" stroke="#F59E0B" stroke-width="16"/>
+  <circle cx="330" cy="220" r="66" fill="#F59E0B" fill-opacity="0.12"/>
+  <line x1="385" y1="275" x2="445" y2="335" stroke="#F59E0B" stroke-width="20" stroke-linecap="round"/>
+  <!-- Sparkle Accent -->
+  <polygon points="330,175 336,195 356,201 336,207 330,227 324,207 304,201 324,195" fill="#FBBF24"/>
+</svg>
